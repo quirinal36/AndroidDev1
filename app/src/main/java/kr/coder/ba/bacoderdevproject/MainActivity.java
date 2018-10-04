@@ -1,6 +1,7 @@
 package kr.coder.ba.bacoderdevproject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -49,10 +50,12 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
+
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        final String imgUrl = "https://cdn.passporthealthusa.com/wp-content/uploads/2017/12/vaccines-advice-tahiti.jp";
+        final String imgUrl = "https://tecnoblog.net/wp-content/uploads/2018/08/Android_P_WhiteBackground-1060x596.jpg";
         ImageView imgView = findViewById(R.id.imageView2);
         Picasso.with(context)
                 .load(imgUrl)
@@ -114,6 +117,8 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Handle the camera action
+            Intent intent = new Intent(context, LoginActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
