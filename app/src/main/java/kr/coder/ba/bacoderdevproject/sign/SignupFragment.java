@@ -1,21 +1,18 @@
-package kr.coder.ba.bacoderdevproject;
+package kr.coder.ba.bacoderdevproject.sign;
 
-import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,7 +20,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -31,12 +27,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.nbsp.materialfilepicker.MaterialFilePicker;
-
-import net.gotev.uploadservice.MultipartUploadRequest;
-import net.gotev.uploadservice.UploadNotificationConfig;
-import net.gotev.uploadservice.UploadService;
-import net.gotev.uploadservice.okhttp.OkHttpStack;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,12 +40,31 @@ import java.util.UUID;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
+import kr.coder.ba.bacoderdevproject.EndPoints;
+import kr.coder.ba.bacoderdevproject.MainActivity;
+import kr.coder.ba.bacoderdevproject.R;
 
-public class SignupActivity extends AppCompatActivity {
-    private static final String TAG = "SignupActivity";
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link SignupFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link SignupFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class SignupFragment extends Fragment {
+    final static String TITLE = "회원가입";
+
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
+
+    private static final String TAG = "SignupFragment";
 
     @BindView(R.id.input_name)
     EditText _nameText;
@@ -77,28 +86,79 @@ public class SignupActivity extends AppCompatActivity {
     Button _uploadImgButton;
     @BindView(R.id.imageUploadView)
     ImageView _uploadImageView;
+    public SignupFragment() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param param1 Parameter 1.
+     * @param param2 Parameter 2.
+     * @return A new instance of fragment SignupFragment.
+     */
+    // TODO: Rename and change types and number of parameters
+    public static SignupFragment newInstance(String param1, String param2) {
+        SignupFragment fragment = new SignupFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        args.putString(ARG_PARAM2, param2);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // setContentView(R.layout.activity_signup);
-        ButterKnife.bind(this);
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+            mParam2 = getArguments().getString(ARG_PARAM2);
+        }
+    }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_signup, container, false);
+        ButterKnife.bind(this, view);
+        return view;
+    }
+
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
     }
 
     @OnClick(R.id.buttonUploadImage)
     public void openImgPick() {
         Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(i, 100);
-    }
-
-    @OnClick(R.id.link_login)
-    public void onClickLoginLink(View v) {
-        // Finish the registration screen and return to the Login activity
-        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-        startActivity(intent);
-        finish();
-        overridePendingTransition(R.anim.push_left_in, R.anim.push_left_out);
+        getActivity().startActivityForResult(i, 100);
     }
 
     @OnClick(R.id.btn_signup)
@@ -120,7 +180,7 @@ public class SignupActivity extends AppCompatActivity {
         String reEnterPassword = _reEnterPasswordText.getText().toString();
         String uniqueId = UUID.randomUUID().toString();
 
-        RequestQueue rq = Volley.newRequestQueue(getApplicationContext());
+        RequestQueue rq = Volley.newRequestQueue(getContext());
         StringBuilder url = new StringBuilder();
         url.append("http://www.bacoder.kr/addPerson.jsp?");
         url.append("&name=" + name);
@@ -141,10 +201,10 @@ public class SignupActivity extends AppCompatActivity {
                             int result = (int) response.get("result");
                             if (result > 0) {
                                 // 성공
-                                Toast.makeText(getApplicationContext(), "성공", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getContext(), "성공", Toast.LENGTH_LONG).show();
                             } else {
                                 // 실패
-                                Toast.makeText(getApplicationContext(), "실패", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getContext(), "실패", Toast.LENGTH_LONG).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -156,79 +216,6 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
         rq.add(jsonObjectRequest);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Uri imageUri;
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100 && resultCode == RESULT_OK && data != null) {
-            imageUri = data.getData();
-            Log.d(TAG, imageUri.toString());
-
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-                byte bb[] = bytes.toByteArray();
-                final String file = Base64.encodeToString(bb, Base64.DEFAULT);
-
-                _uploadImageView.setImageBitmap(bitmap);
-
-                StringRequest sr = new StringRequest(Request.Method.POST, EndPoints.UPLOAD_URL, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                    }
-                }) {
-                    @Override
-                    protected Map<String, String> getParams() throws AuthFailureError {
-                        HashMap<String, String> h = new HashMap<>();
-                        h.put("image", file);
-                        h.put("filename", "uploaded_image.jpg");
-                        return h;
-                    }
-                };
-                RequestQueue rq = Volley.newRequestQueue(getApplicationContext());
-                rq.add(sr);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /*
-     * The method is taking Bitmap as an argument
-     * then it will return the byte[] array for the given bitmap
-     * and we will send this array to the server
-     * here we are using PNG Compression with 80% quality
-     * you can give quality between 0 to 100
-     * 0 means worse quality
-     * 100 means best quality
-     * */
-    public byte[] getFileDataFromDrawable(Bitmap bitmap) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream);
-        return byteArrayOutputStream.toByteArray();
-    }
-
-    public void onSignupSuccess() {
-        _signupButton.setEnabled(true);
-        setResult(RESULT_OK, null);
-        finish();
-    }
-
-    public void onSignupFailed() {
-        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
-
-        _signupButton.setEnabled(true);
     }
 
     public boolean validate() {
@@ -285,5 +272,54 @@ public class SignupActivity extends AppCompatActivity {
         }
 
         return valid;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 100 && resultCode == Activity.RESULT_OK && data != null) {
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), data.getData());
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+                byte bb[] = bytes.toByteArray();
+                final String file = Base64.encodeToString(bb, Base64.DEFAULT);
+
+                _uploadImageView.setImageBitmap(bitmap);
+
+                StringRequest sr = new StringRequest(Request.Method.POST, EndPoints.UPLOAD_URL, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                }) {
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        HashMap<String, String> h = new HashMap<>();
+                        h.put("image", file);
+                        h.put("filename", "uploaded_image.jpg");
+                        return h;
+                    }
+                };
+                RequestQueue rq = Volley.newRequestQueue(getContext());
+                rq.add(sr);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((MainActivity)getActivity()).getSupportActionBar().setTitle(this.TITLE);
     }
 }

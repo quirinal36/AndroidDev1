@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.MyInfoFragment">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/frameLayout">
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <TextView
+                    android:id="@+id/text_view_myname_guide"
+                    android:layout_width="106dp"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="이름" />
+
+                <TextView
+                    android:id="@+id/text_view_myname"
+                    android:layout_width="264dp"
+                    android:layout_height="wrap_content"
+                    android:text="LeeHG" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <TextView
+                    android:id="@+id/text_view_phone_guide"
+                    android:layout_width="106dp"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="번호" />
+
+                <TextView
+                    android:id="@+id/text_view_phone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="01012345678" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1">
+
+                <TextView
+                    android:id="@+id/text_view_myemail_guide"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="이메일" />
+
+                <TextView
+                    android:id="@+id/text_view_myemail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".7"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="admin@bacoder.kr" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:weightSum="1">
+
+                <TextView
+                    android:id="@+id/text_view_myaddress_guide"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:layout_weight=".3"
+                    android:text="주소" />
+
+                <TextView
+                    android:id="@+id/text_view_myaddress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".7"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="전주시 완산구 효자동" />
+            </TableRow>
+        </TableLayout>
+
+        <FrameLayout
+            android:id="@+id/frameLayout"
+            android:layout_width="367dp"
+            android:layout_height="181dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <android.support.v7.widget.CardView
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:elevation="12dp"
+                android:id="@+id/round_view_my_profile"
+                android:layout_gravity="center"
+                app:cardCornerRadius="80dp"
+                android:layout_centerHorizontal="true" >
+
+                <ImageView
+                    android:id="@+id/imageViewMyProfile"
+                    android:layout_width="160dp"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/avatar" />
+            </android.support.v7.widget.CardView>
+        </FrameLayout>
+
+    </android.support.constraint.ConstraintLayout>
+</FrameLayout>

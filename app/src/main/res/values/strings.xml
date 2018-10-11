@@ -14,4 +14,8 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
 
     <string name="server_address">https://your.server.com</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

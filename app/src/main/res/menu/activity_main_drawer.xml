@@ -6,8 +6,8 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_login"
-            android:title="로그인" />
+            android:icon="@drawable/list"
+            android:title="환자리스트" />
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
@@ -18,8 +18,8 @@
             android:title="Slideshow" />
         <item
             android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="내정보" />
     </group>
 
     <item android:title="Communicate">
@@ -30,8 +30,8 @@
                 android:title="Share" />
             <item
                 android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:icon="@drawable/add_user"
+                android:title="회원가입" />
         </menu>
     </item>
 
