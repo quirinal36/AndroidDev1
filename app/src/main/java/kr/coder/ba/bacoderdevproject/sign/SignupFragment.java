@@ -1,13 +1,20 @@
 package kr.coder.ba.bacoderdevproject.sign;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.telecom.TelecomManager;
+import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -68,8 +75,6 @@ public class SignupFragment extends Fragment {
 
     @BindView(R.id.input_name)
     EditText _nameText;
-    @BindView(R.id.input_address)
-    EditText _addressText;
     @BindView(R.id.input_email)
     EditText _emailText;
     @BindView(R.id.input_mobile)
@@ -117,12 +122,21 @@ public class SignupFragment extends Fragment {
         }
     }
 
+    @Deprecated
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
         ButterKnife.bind(this, view);
+
+        TelephonyManager telephonyManager = (TelephonyManager)getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_PHONE_STATE)
+                == PackageManager.PERMISSION_GRANTED) {
+            _mobileText.setText(telephonyManager.getLine1Number().substring(1));
+        }
+        SharedPreferences pref = getActivity().getSharedPreferences(getString(R.string.sharedpreference_name), Context.MODE_PRIVATE);
+        Log.d(TAG, pref.getString(getString(R.string.device_uuid), ""));
         return view;
     }
 
@@ -160,45 +174,34 @@ public class SignupFragment extends Fragment {
         Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         getActivity().startActivityForResult(i, 100);
     }
-
+    public void onSignupFailed(){
+        Log.d(TAG, "please fill edit texts");
+    }
     @OnClick(R.id.btn_signup)
     public void signup() {
-        Log.d(TAG, "Signup");
-/*
-        if (!validate()) {
-            onSignupFailed();
-            return;
-        }
-*/
+//        Log.d(TAG, "Signup");
+
+//        if (!validate()) {
+//            onSignupFailed();
+//            return;
+//        }
+
         _signupButton.setEnabled(false);
 
-        String name = _nameText.getText().toString();
-        String address = _addressText.getText().toString();
-        String email = _emailText.getText().toString();
-        String mobile = _mobileText.getText().toString();
-        String password = _passwordText.getText().toString();
-        String reEnterPassword = _reEnterPasswordText.getText().toString();
-        String uniqueId = UUID.randomUUID().toString();
 
-        RequestQueue rq = Volley.newRequestQueue(getContext());
-        StringBuilder url = new StringBuilder();
-        url.append("http://www.bacoder.kr/addPerson.jsp?");
-        url.append("&name=" + name);
-        url.append("&password=" + password);
-        url.append("&address=" + address);
-        url.append("&email=" + email);
-        url.append("&phone=" + mobile);
-        url.append("&uniqueId=" + uniqueId);
 
-        Log.d(TAG, url.toString());
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url.toString(), null,
-                new Response.Listener<JSONObject>() {
+        final String signupPage = getString(R.string.server_address) + "/signup.jsp";
+        Log.d(TAG, signupPage);
+        StringRequest jsonObjectRequest = new StringRequest(Request.Method.POST, signupPage,
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
                         // onSignupSuccess();
                         try {
-                            int result = (int) response.get("result");
+                            Log.d(TAG, response.toString());
+
+                            JSONObject json = new JSONObject(response);
+                            int result = json.getInt("result");
                             if (result > 0) {
                                 // 성공
                                 Toast.makeText(getContext(), "성공", Toast.LENGTH_LONG).show();
@@ -213,8 +216,36 @@ public class SignupFragment extends Fragment {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "error listener");
             }
-        });
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                SharedPreferences pref = getActivity().getSharedPreferences(getString(R.string.sharedpreference_name), Context.MODE_PRIVATE);
+                String unique = pref.getString(getString(R.string.device_uuid), "");
+                Map<String, String> param = new HashMap<>();
+                String name = _nameText.getText().toString();
+                String email = _emailText.getText().toString();
+                String mobile = _mobileText.getText().toString();
+                String password = _passwordText.getText().toString();
+                param.put("name", name);
+                param.put("email", email);
+                param.put("phone", mobile);
+                param.put("password", password);
+                param.put("unique_id", unique);
+
+                JSONObject json = new JSONObject(param);
+                Log.d(TAG, json.toString());
+
+                if(_uploadImageView.getTag() != null) {
+                    param.put("filename", "upload.jpg");
+                    param.put("image", _uploadImageView.getTag().toString());
+                }
+
+                return param;
+            }
+        };
+        RequestQueue rq = Volley.newRequestQueue(getContext());
         rq.add(jsonObjectRequest);
     }
 
@@ -222,7 +253,6 @@ public class SignupFragment extends Fragment {
         boolean valid = true;
 
         String name = _nameText.getText().toString();
-        String address = _addressText.getText().toString();
         String email = _emailText.getText().toString();
         String mobile = _mobileText.getText().toString();
         String password = _passwordText.getText().toString();
@@ -234,14 +264,6 @@ public class SignupFragment extends Fragment {
         } else {
             _nameText.setError(null);
         }
-
-        if (address.isEmpty()) {
-            _addressText.setError("Enter Valid Address");
-            valid = false;
-        } else {
-            _addressText.setError(null);
-        }
-
 
         if (email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _emailText.setError("enter a valid email address");
@@ -284,10 +306,11 @@ public class SignupFragment extends Fragment {
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
                 byte bb[] = bytes.toByteArray();
-                final String file = Base64.encodeToString(bb, Base64.DEFAULT);
+                String file = Base64.encodeToString(bb, Base64.DEFAULT);
 
                 _uploadImageView.setImageBitmap(bitmap);
-
+                _uploadImageView.setTag(file);
+/*
                 StringRequest sr = new StringRequest(Request.Method.POST, EndPoints.UPLOAD_URL, new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -309,6 +332,7 @@ public class SignupFragment extends Fragment {
                 };
                 RequestQueue rq = Volley.newRequestQueue(getContext());
                 rq.add(sr);
+                */
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e){

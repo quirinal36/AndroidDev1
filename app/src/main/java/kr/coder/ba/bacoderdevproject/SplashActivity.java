@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -19,6 +20,8 @@ import android.view.View;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.UUID;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -59,7 +62,7 @@ public class SplashActivity extends AppCompatActivity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        login();
+        //login();
     }
     private boolean login(){
         JSONObject response = new JSONObject();
@@ -74,8 +77,17 @@ public class SplashActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         TelephonyManager tMgr = (TelephonyManager)getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                == PackageManager.PERMISSION_GRANTED) {
             String mPhoneNumber = tMgr.getLine1Number();
+            SharedPreferences pref = getSharedPreferences(getString(R.string.sharedpreference_name), MODE_PRIVATE);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putString(getString(R.string.device_phone_num), mPhoneNumber.substring(1));
+
+            if(pref.getString(getString(R.string.device_uuid), "").length() == 0){
+                editor.putString(getString(R.string.device_uuid), UUID.randomUUID().toString());
+            }
+            editor.commit();
 
             startActivity(new Intent(this, MainActivity.class));
             finish();
@@ -98,10 +110,16 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
     private void requestPermission(){
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED
                 &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED)
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                        == PackageManager.PERMISSION_GRANTED) {
+            login();
             return;
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE}, STORAGE_PERMISSION_CODE);
+        }
+        ActivityCompat.requestPermissions(this,
+                new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE } ,
+                STORAGE_PERMISSION_CODE);
     }
 }

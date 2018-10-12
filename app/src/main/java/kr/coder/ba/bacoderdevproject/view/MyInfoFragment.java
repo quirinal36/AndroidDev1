@@ -33,14 +33,13 @@ public class MyInfoFragment extends Fragment {
 
     @BindView(R.id.imageViewMyProfile)
     ImageView _myProfile;
-    @BindView(R.id.text_view_myaddress)
-    TextView _myAddress;
     @BindView(R.id.text_view_myemail)
     TextView _myEmail;
     @BindView(R.id.text_view_phone)
     TextView _myPhone;
     @BindView(R.id.text_view_myname)
     TextView _myName;
+
     private final String TAG = MyInfoFragment.class.getSimpleName();
 
     private static final String ARG_PARAM1 = "param1";
@@ -79,12 +78,14 @@ public class MyInfoFragment extends Fragment {
         setView(mParam1, mParam2);
         return view;
     }
-    private void setView(final String phone, final String password){
+    private void setView(final String phone, final String deviceId){
         RequestQueue rq = Volley.newRequestQueue(getContext());
         StringBuilder url = new StringBuilder();
         url.append("http://www.bacoder.kr/getPerson.jsp");
         url.append("?phone=" + phone);
-        url.append("&password=" + password);
+        url.append("&deviceId=" + deviceId);
+
+        Log.d(TAG, url.toString());
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url.toString(), null,
                 new Response.Listener<JSONObject>() {
@@ -94,7 +95,6 @@ public class MyInfoFragment extends Fragment {
                         try {
                             JSONObject myInfo = response;
                             Person person = Person.parsePerson(myInfo);
-                            _myAddress.setText(person.getAddress());
                             _myEmail.setText(person.getEmail());
                             _myName.setText(person.getName());
                             _myPhone.setText(person.getPhone());

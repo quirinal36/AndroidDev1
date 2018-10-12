@@ -2,6 +2,7 @@ package kr.coder.ba.bacoderdevproject;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -68,9 +69,10 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_manage) {
             fragment = new MyInfoFragment();
+            SharedPreferences pref = getSharedPreferences(getString(R.string.sharedpreference_name), MODE_PRIVATE);
             Bundle args = new Bundle();
-            args.putString("param1", "01026079765");
-            args.putString("param2", "12355");
+            args.putString("param1", pref.getString(getString(R.string.device_phone_num), ""));
+            args.putString("param2", pref.getString(getString(R.string.device_uuid), ""));
             fragment.setArguments(args);
         } else if (id == R.id.nav_share) {
 
