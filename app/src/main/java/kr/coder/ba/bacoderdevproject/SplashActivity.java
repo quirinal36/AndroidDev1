@@ -18,9 +18,19 @@ import android.telephony.TelephonyManager;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -54,7 +64,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 //        setTheme(R.style.AppTheme_Dark);
         setContentView(R.layout.activity_splash);
-
+        setPhoneInfo();
         mContentView = findViewById(R.id.fullscreen_content);
 
         requestPermission();
@@ -62,39 +72,72 @@ public class SplashActivity extends AppCompatActivity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        //login();
     }
+
     private boolean login(){
-        JSONObject response = new JSONObject();
-        try {
-            int id = response.getInt("id");
-            if(id > 0) {
-                // 로그인 성공
-            }else {
-                // 로그인 실패
+        final String url = getString(R.string.server_address) + "/getPerson.jsp";
+        StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                int id = 0;
+                try {
+                    id = new JSONObject(response).getInt("id");
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+                onLoginSuccess(id);
+//                if(id > 0) {
+//
+//                    // 로그인 성공
+//                }else {
+//                    // 로그인 실패
+//                    onLoginSuccess();
+//                }
             }
-        }catch(JSONException e){
-            e.printStackTrace();
-        }
-        TelephonyManager tMgr = (TelephonyManager)getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> param = new HashMap<>();
+                SharedPreferences pref = getSharedPreferences(getString(R.string.sharedpreference_name), MODE_PRIVATE);
+                param.put("phone", pref.getString(getString(R.string.device_phone_num), null));
+                param.put("deviceId", pref.getString(getString(R.string.device_uuid), null));
+                return param;
+            }
+        };
+        RequestQueue queue = Volley.newRequestQueue(this);
+        queue.add(request);
+        return false;
+    }
+    private void onLoginFail(){
+
+    }
+    private void setPhoneInfo() {
+        TelephonyManager tMgr = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
                 == PackageManager.PERMISSION_GRANTED) {
             String mPhoneNumber = tMgr.getLine1Number();
             SharedPreferences pref = getSharedPreferences(getString(R.string.sharedpreference_name), MODE_PRIVATE);
             SharedPreferences.Editor editor = pref.edit();
             editor.putString(getString(R.string.device_phone_num), mPhoneNumber.substring(1));
 
-            if(pref.getString(getString(R.string.device_uuid), "").length() == 0){
+            if (pref.getString(getString(R.string.device_uuid), "").length() == 0) {
                 editor.putString(getString(R.string.device_uuid), UUID.randomUUID().toString());
             }
             editor.commit();
 
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
         }
-        return false;
     }
-
+    private void onLoginSuccess(int id){
+        SharedPreferences pref = getSharedPreferences(getString(R.string.sharedpreference_name), MODE_PRIVATE);
+        pref.edit().putInt(getString(R.string.user_id), id).commit();
+        startActivity(new Intent(this, MainActivity.class));
+        finish();
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == STORAGE_PERMISSION_CODE

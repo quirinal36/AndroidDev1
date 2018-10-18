@@ -13,7 +13,10 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import butterknife.BindView;
 import kr.coder.ba.bacoderdevproject.list.PatientListFragment;
 import kr.coder.ba.bacoderdevproject.sign.SignupFragment;
 import kr.coder.ba.bacoderdevproject.view.MyInfoFragment;
@@ -23,6 +26,10 @@ public class MainActivity extends AppCompatActivity
 
     private Context context;
 
+    @BindView(R.id.imageView)
+    ImageView _profileImageView;
+    @BindView(R.id.user_name)
+    TextView _userNameView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +47,10 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        SharedPreferences pref = getSharedPreferences(getString(R.string.sharedpreference_name), MODE_PRIVATE);
+        int userId = pref.getInt(getString(R.string.user_id), 0);
+
     }
 
     @Override

@@ -13,19 +13,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,26 +90,33 @@ public class PatientListFragment extends Fragment {
         RequestQueue rq = Volley.newRequestQueue(getContext());
         StringBuilder url = new StringBuilder();
         url.append("http://www.bacoder.kr/getPatients.jsp");
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url.toString(), null,
-                new Response.Listener<JSONObject>() {
+        StringRequest sr = new StringRequest(Request.Method.GET, url.toString(),
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
+                        Log.d(TAG, response.toString());
                         try {
-                            JSONArray array = (JSONArray) response.get("list");
+                            JSONObject resultJson = new JSONObject(URLDecoder.decode(response, "UTF-8"));
+                            JSONArray array = (JSONArray) resultJson.get("list");
                             Log.d(TAG, "array leng: " + array.length());
                             for(int i=0; i<array.length(); i++){
                                 JSONObject obj = new JSONObject(array.getString(i));
-                                Log.d(TAG, obj.toString());
+
+
                                 Patient patient = new Patient();
                                 patient.setId(obj.getInt("id"));
                                 patient.setName(obj.getString("name"));
-                                patient.setPhoto(obj.getString("photo"));
+                                patient.setPhoto(obj.getString("photo").replaceAll("\\\\", ""));
                                 patient.setP_date(obj.getString("p_date"));
+
+                                Log.d(TAG, patient.toString());
                                 list.add(patient);
                             }
                             adapter = new PatientAdapter(list);
                             recyclerView.setAdapter(adapter);
                         } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedEncodingException e){
                             e.printStackTrace();
                         }
                     }
@@ -113,7 +125,7 @@ public class PatientListFragment extends Fragment {
             public void onErrorResponse(VolleyError error) {
             }
         });
-        rq.add(jsonObjectRequest);
+        rq.add(sr);
     }
     @Override
     public void onResume() {
@@ -136,7 +148,17 @@ public class PatientListFragment extends Fragment {
         public void bindItem(Patient patient){
             this.patient = patient;
             titleText.setText(patient.getName());
-            Picasso.with(getContext()).load(patient.getPhoto()).into(thumbnailImg);
+            Picasso.with(getContext()).load(patient.getPhoto()).placeholder(R.drawable.avatar).into(thumbnailImg, new Callback() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(getContext(), "성공", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError() {
+                    Toast.makeText(getContext(), "실패", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 

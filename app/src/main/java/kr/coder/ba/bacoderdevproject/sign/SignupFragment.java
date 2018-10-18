@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
@@ -50,6 +51,7 @@ import butterknife.OnClick;
 import kr.coder.ba.bacoderdevproject.EndPoints;
 import kr.coder.ba.bacoderdevproject.MainActivity;
 import kr.coder.ba.bacoderdevproject.R;
+import kr.coder.ba.bacoderdevproject.list.PatientListFragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -135,8 +137,6 @@ public class SignupFragment extends Fragment {
                 == PackageManager.PERMISSION_GRANTED) {
             _mobileText.setText(telephonyManager.getLine1Number().substring(1));
         }
-        SharedPreferences pref = getActivity().getSharedPreferences(getString(R.string.sharedpreference_name), Context.MODE_PRIVATE);
-        Log.d(TAG, pref.getString(getString(R.string.device_uuid), ""));
         return view;
     }
 
@@ -177,21 +177,18 @@ public class SignupFragment extends Fragment {
     public void onSignupFailed(){
         Log.d(TAG, "please fill edit texts");
     }
+
     @OnClick(R.id.btn_signup)
     public void signup() {
-//        Log.d(TAG, "Signup");
-
-//        if (!validate()) {
-//            onSignupFailed();
-//            return;
-//        }
+        if (!validate()) {
+            onSignupFailed();
+            return;
+        }
 
         _signupButton.setEnabled(false);
 
-
-
         final String signupPage = getString(R.string.server_address) + "/signup.jsp";
-        Log.d(TAG, signupPage);
+
         StringRequest jsonObjectRequest = new StringRequest(Request.Method.POST, signupPage,
                 new Response.Listener<String>() {
                     @Override
@@ -204,7 +201,11 @@ public class SignupFragment extends Fragment {
                             int result = json.getInt("result");
                             if (result > 0) {
                                 // 성공
+
                                 Toast.makeText(getContext(), "성공", Toast.LENGTH_LONG).show();
+                                FragmentTransaction fragmentTransaction = ((MainActivity)getActivity()).getSupportFragmentManager().beginTransaction();
+                                fragmentTransaction.replace(R.id.content_main, new PatientListFragment());
+                                fragmentTransaction.commit();
                             } else {
                                 // 실패
                                 Toast.makeText(getContext(), "실패", Toast.LENGTH_LONG).show();
@@ -310,29 +311,6 @@ public class SignupFragment extends Fragment {
 
                 _uploadImageView.setImageBitmap(bitmap);
                 _uploadImageView.setTag(file);
-/*
-                StringRequest sr = new StringRequest(Request.Method.POST, EndPoints.UPLOAD_URL, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                    }
-                }) {
-                    @Override
-                    protected Map<String, String> getParams() throws AuthFailureError {
-                        HashMap<String, String> h = new HashMap<>();
-                        h.put("image", file);
-                        h.put("filename", "uploaded_image.jpg");
-                        return h;
-                    }
-                };
-                RequestQueue rq = Volley.newRequestQueue(getContext());
-                rq.add(sr);
-                */
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e){

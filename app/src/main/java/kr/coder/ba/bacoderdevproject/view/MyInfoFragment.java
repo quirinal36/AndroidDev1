@@ -85,8 +85,6 @@ public class MyInfoFragment extends Fragment {
         url.append("?phone=" + phone);
         url.append("&deviceId=" + deviceId);
 
-        Log.d(TAG, url.toString());
-
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url.toString(), null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -98,7 +96,7 @@ public class MyInfoFragment extends Fragment {
                             _myEmail.setText(person.getEmail());
                             _myName.setText(person.getName());
                             _myPhone.setText(person.getPhone());
-                            Picasso.with(getContext()).load(person.getPhoto())
+                            Picasso.with(getContext()).load(person.getPhoto().replaceAll("\\\\", ""))
                                     .placeholder(R.drawable.avatar)
                                     .error(R.drawable.avatar).into(_myProfile);
                         } catch (JSONException e) {
