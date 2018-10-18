@@ -8,8 +8,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
+
 import kr.coder.ba.bacoderdevproject.MainActivity;
 import kr.coder.ba.bacoderdevproject.R;
+import kr.coder.ba.bacoderdevproject.list.PatientListFragment;
+import kr.coder.ba.bacoderdevproject.model.Patient;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -19,12 +36,16 @@ import kr.coder.ba.bacoderdevproject.R;
 public class PatientFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-    private final String TITLE = " 님의 정보";
+//    private static final String ARG_PARAM1 = "param1";
+//    private static final String ARG_PARAM2 = "param2";
+    public final String TITLE = "환자정보";
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private int patientId;
+//    private String mParam2;
+
+    public String getTITLE() {
+        return TITLE;
+    }
 
     public PatientFragment() {
         // Required empty public constructor
@@ -42,8 +63,7 @@ public class PatientFragment extends Fragment {
     public static PatientFragment newInstance(String param1, String param2) {
         PatientFragment fragment = new PatientFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(PatientListFragment.CHOICE, param1);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,8 +72,7 @@ public class PatientFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            patientId = getArguments().getInt(PatientListFragment.CHOICE);
         }
     }
 
@@ -62,11 +81,46 @@ public class PatientFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_patient, container, false);
+
         return view;
     }
     @Override
     public void onResume() {
         super.onResume();
-        ((MainActivity)getActivity()).getSupportActionBar().setTitle(mParam1 + this.TITLE);
+//        ((MainActivity)getActivity()).getSupportActionBar().setTitle(this.TITLE);
+        getPatientInfo(patientId);
     }
+    private void getPatientInfo(final int id){
+        final String url = getString(R.string.server_address) + "/getPatient.jsp";
+        StringRequest sr = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject patientJson = new JSONObject(URLDecoder.decode(response, "UTF-8"));
+                    Patient patient = Patient.parseTo(patientJson);
+
+                    ((MainActivity) getActivity()).getSupportActionBar().setTitle(patient.getName() +"님의 정보");
+                }catch(JSONException e){
+                    e.printStackTrace();
+                }catch(UnsupportedEncodingException e){
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> map = new HashMap<>();
+                map.put("id", String.valueOf(id));
+                return map;
+            }
+        };
+
+        Volley.newRequestQueue(getContext()).add(sr);
+    }
+
 }

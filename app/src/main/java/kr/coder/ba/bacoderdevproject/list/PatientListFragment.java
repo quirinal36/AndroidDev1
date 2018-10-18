@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,7 +48,7 @@ public class PatientListFragment extends Fragment {
 //    private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
 //    private int mColumnCount = 1;
-    private final String TAG = PatientListFragment.class.getSimpleName();
+    public static final String TAG = PatientListFragment.class.getSimpleName();
     RecyclerView recyclerView;
     private PatientAdapter adapter;
     /**
@@ -139,6 +140,8 @@ public class PatientListFragment extends Fragment {
         TextView titleText;
         @BindView(R.id.list_thumbnail_view)
         ImageView thumbnailImg;
+        @BindView(R.id.list_item_view)
+        LinearLayout _hoder;
 
         public PatientHolder(View itemView){
             super(itemView);
@@ -148,6 +151,7 @@ public class PatientListFragment extends Fragment {
         public void bindItem(Patient patient){
             this.patient = patient;
             titleText.setText(patient.getName());
+            _hoder.setTag(patient.getId());
             Picasso.with(getContext()).load(patient.getPhoto()).placeholder(R.drawable.avatar).into(thumbnailImg, new Callback() {
                 @Override
                 public void onSuccess() {
@@ -161,6 +165,7 @@ public class PatientListFragment extends Fragment {
             });
         }
     }
+    public final static String CHOICE = "CHOICE";
 
     private class PatientAdapter extends RecyclerView.Adapter<PatientHolder> implements View.OnClickListener {
         private List<Patient> items;
@@ -172,7 +177,14 @@ public class PatientListFragment extends Fragment {
         public void onClick(View view) {
             Fragment fragment = new PatientFragment();
             FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+
+            Bundle arguments = new Bundle();
+            Log.d(TAG, "(int)view.getTag(): " + (int)view.getTag());
+            arguments.putInt(CHOICE, (int)view.getTag());
+            fragment.setArguments(arguments);
+
             fragmentTransaction.replace(R.id.content_main , fragment);
+            fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
 

@@ -15,8 +15,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -39,6 +41,7 @@ import java.util.UUID;
  */
 public class SplashActivity extends AppCompatActivity {
     final int STORAGE_PERMISSION_CODE = 22;
+    final String TAG = SplashActivity.class.getSimpleName();
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -66,7 +69,7 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         setPhoneInfo();
         mContentView = findViewById(R.id.fullscreen_content);
-
+        Log.d(TAG, "requestPermission");
         requestPermission();
         // Set up the user interaction to manually show or hide the system UI.
         // Upon interacting with UI controls, delay any scheduled hide()
@@ -85,6 +88,7 @@ public class SplashActivity extends AppCompatActivity {
                 }catch (JSONException e){
                     e.printStackTrace();
                 }
+                Toast.makeText(getApplicationContext(), "로그인success", Toast.LENGTH_LONG).show();
                 onLoginSuccess(id);
 //                if(id > 0) {
 //
@@ -97,7 +101,7 @@ public class SplashActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Toast.makeText(getApplicationContext(), "로그인 error", Toast.LENGTH_LONG).show();
             }
         }){
             @Override
@@ -158,6 +162,7 @@ public class SplashActivity extends AppCompatActivity {
                 &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
                         == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "login");
             login();
             return;
         }

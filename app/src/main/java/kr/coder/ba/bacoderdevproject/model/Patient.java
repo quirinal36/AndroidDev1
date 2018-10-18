@@ -2,6 +2,8 @@ package kr.coder.ba.bacoderdevproject.model;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Patient {
     private int id;
@@ -38,4 +40,21 @@ public class Patient {
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
     }
+    public static Patient parseTo(JSONObject input) throws JSONException {
+        Patient result = new Patient();
+        if(input.has("id")){
+            result.setId(input.getInt("id"));
+        }
+        if(input.has("photo")){
+            result.setPhoto(input.getString("photo"));
+        }
+        if(input.has("name")){
+            result.setName(input.getString("name"));
+        }
+        if(input.has("p_date")){
+            result.setP_date(input.getString("p_date"));
+        }
+        return result;
+    }
+
 }
