@@ -25,6 +25,7 @@ import butterknife.BindView;
 import kr.coder.ba.bacoderdevproject.list.PatientListFragment;
 import kr.coder.ba.bacoderdevproject.sign.SignupFragment;
 import kr.coder.ba.bacoderdevproject.view.MyInfoFragment;
+import kr.coder.ba.bacoderdevproject.view.PhotoUploadFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_camera) {
             fragment = new PatientListFragment();
         } else if (id == R.id.nav_gallery) {
-
+            fragment = new PhotoUploadFragment();
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
