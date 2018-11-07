@@ -90,13 +90,6 @@ public class SplashActivity extends AppCompatActivity {
                 }
                 Toast.makeText(getApplicationContext(), "로그인success", Toast.LENGTH_LONG).show();
                 onLoginSuccess(id);
-//                if(id > 0) {
-//
-//                    // 로그인 성공
-//                }else {
-//                    // 로그인 실패
-//                    onLoginSuccess();
-//                }
             }
         }, new Response.ErrorListener() {
             @Override
@@ -114,7 +107,8 @@ public class SplashActivity extends AppCompatActivity {
             }
         };
         RequestQueue queue = Volley.newRequestQueue(this);
-        queue.add(request);
+        //queue.add(request);
+        onLoginSuccess(50);
         return false;
     }
     private void onLoginFail(){

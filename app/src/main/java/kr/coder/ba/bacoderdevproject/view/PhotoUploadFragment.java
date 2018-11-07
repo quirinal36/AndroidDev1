@@ -8,11 +8,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
@@ -32,11 +36,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +53,7 @@ import butterknife.OnClick;
 import kr.coder.ba.bacoderdevproject.MainActivity;
 import kr.coder.ba.bacoderdevproject.R;
 import kr.coder.ba.bacoderdevproject.list.PatientListFragment;
+import kr.coder.ba.bacoderdevproject.util.FileUtil;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -57,6 +64,7 @@ import kr.coder.ba.bacoderdevproject.list.PatientListFragment;
 public class PhotoUploadFragment extends Fragment {
     final static String TITLE = "사진올리기";
     private final int REQ_CODE = 1101;
+    private final int PICK_FROM_CAMERA = 1106;
 
     @BindView(R.id.sendPhotoInfoButton)
     Button _sendPhotoInfoButton;
@@ -64,6 +72,8 @@ public class PhotoUploadFragment extends Fragment {
     Button _uploadImgButton;
     @BindView(R.id.photoUploadView)
     ImageView _uploadImageView;
+    @BindView(R.id.buttonCapturePhoto)
+    Button _captureImaButton;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -76,6 +86,8 @@ public class PhotoUploadFragment extends Fragment {
 
     private static final String TAG = "PhotoUploadFragment";
 
+    String imageFileName;
+    File imageFile;
 
     public PhotoUploadFragment() {
         // Required empty public constructor
@@ -100,6 +112,13 @@ public class PhotoUploadFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        imageFileName = String.valueOf(System.currentTimeMillis());
+        imageFile = FileUtil.getInstance().getImageFile(getContext(), imageFileName);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -116,10 +135,21 @@ public class PhotoUploadFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_photo_upload, container, false);
         ButterKnife.bind(this, view);
 
-
         return view;
     }
-
+    @OnClick(R.id.buttonCapturePhoto)
+    public void openCapturePhoto(){
+        Uri uri;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            uri = FileProvider.getUriForFile(getContext(), "kr.coder.ba.bacoderdevproject.fileprovider", imageFile);
+        }else{
+            uri = Uri.fromFile(imageFile);
+        }
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        getActivity().startActivityForResult(intent, PICK_FROM_CAMERA);
+    }
     @OnClick(R.id.buttonUploadPhoto)
     public void openImgPick() {
         Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -200,22 +230,27 @@ public class PhotoUploadFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult");
 
-        if (requestCode == REQ_CODE && resultCode == Activity.RESULT_OK && data != null) {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), data.getData());
-                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-                byte bb[] = bytes.toByteArray();
-                String file = Base64.encodeToString(bb, Base64.DEFAULT);
+        if(resultCode == Activity.RESULT_OK){
+            if (requestCode == REQ_CODE && data != null) {
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), data.getData());
+                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+                    byte bb[] = bytes.toByteArray();
+                    String file = Base64.encodeToString(bb, Base64.DEFAULT);
 
-                _uploadImageView.setImageBitmap(bitmap);
-                _uploadImageView.setTag(file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e){
-                e.printStackTrace();
+                    _uploadImageView.setImageBitmap(bitmap);
+                    _uploadImageView.setTag(file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }else if(requestCode == PICK_FROM_CAMERA){
+                Picasso.with(getContext()).load(imageFile).into(_uploadImageView);
             }
         }
+
     }
 
     @Override
