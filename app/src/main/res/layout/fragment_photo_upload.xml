@@ -37,6 +37,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="카메라" />
+        <Button
+            android:id="@+id/buttonGetImages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="사진여러장"/>
     </LinearLayout>
     <Button
         android:id="@+id/sendPhotoInfoButton"

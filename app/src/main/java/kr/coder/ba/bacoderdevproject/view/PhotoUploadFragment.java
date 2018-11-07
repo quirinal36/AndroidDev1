@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -65,6 +66,7 @@ public class PhotoUploadFragment extends Fragment {
     final static String TITLE = "사진올리기";
     private final int REQ_CODE = 1101;
     private final int PICK_FROM_CAMERA = 1106;
+    private final int PICK_IMAGES_MULTIPLE = 1107;
 
     @BindView(R.id.sendPhotoInfoButton)
     Button _sendPhotoInfoButton;
@@ -74,6 +76,8 @@ public class PhotoUploadFragment extends Fragment {
     ImageView _uploadImageView;
     @BindView(R.id.buttonCapturePhoto)
     Button _captureImaButton;
+    @BindView(R.id.buttonGetImages)
+    Button _getImages;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -158,7 +162,12 @@ public class PhotoUploadFragment extends Fragment {
     public void onSignupFailed(){
         Log.d(TAG, "please fill edit texts");
     }
-
+    @OnClick(R.id.buttonGetImages)
+    public void getImages(){
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        startActivityForResult(Intent.createChooser(intent, "Select Pictures"), PICK_IMAGES_MULTIPLE);
+    }
     @OnClick(R.id.sendPhotoInfoButton)
     public void signup() {
 
@@ -228,7 +237,7 @@ public class PhotoUploadFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult");
+        Log.d(TAG, "onActivityResult: "  + resultCode +" / " + requestCode);
 
         if(resultCode == Activity.RESULT_OK){
             if (requestCode == REQ_CODE && data != null) {
@@ -248,6 +257,22 @@ public class PhotoUploadFragment extends Fragment {
                 }
             }else if(requestCode == PICK_FROM_CAMERA){
                 Picasso.with(getContext()).load(imageFile).into(_uploadImageView);
+            }else if(requestCode == PICK_IMAGES_MULTIPLE){
+                String [] filePathColumn = {MediaStore.Images.Media.DATA};
+                Log.d(TAG, "data: "+data);
+                if(data != null){
+                    String imageEncoded;
+                    Uri mImageUri = data.getData();
+
+                    Cursor cursor = getContext().getContentResolver().query(mImageUri, filePathColumn, null, null, null);
+                    cursor.moveToFirst();
+
+                    Log.d(TAG, "cursor size : " + cursor.getCount());
+
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    imageEncoded = cursor.getString(columnIndex);
+                    cursor.close();
+                }
             }
         }
 
